@@ -106,8 +106,27 @@ class MoviesDraw(Resource):
         else:
             return jsonify(result)
 
+    def put(self, pk):
+        movie = Movie.query.get(pk)
+        if movie is None:
+            return '{"Answer": "Такого фильма не существует"}', 404
+        req_json = request.json
+        movie.description = req_json["description"]
+        movie.director_id = req_json["director_id"]
+        movie.genre_id = req_json["genre_id"]
+        movie.rating = req_json["rating"]
+        movie.title = req_json["title"]
+        movie.trailer = req_json["trailer"]
+        movie.year = req_json["year"]
+        db.session.add(movie)
+        db.session.commit()
+        db.session.close()
+        return '{"Answer": "Фильм успешно изменён"}', 201
+
     def delete(self, pk):
         movie = Movie.query.get(pk)
+        if movie is None:
+            return '{"Answer": "Такого фильма не существует"}', 404
         db.session.delete(movie)
         db.session.commit()
         db.session.close()
@@ -116,6 +135,11 @@ class MoviesDraw(Resource):
 
 @director_ns.route("/")
 class DirectorsDraw(Resource):
+    def get(self):
+        diretors_serialize = Serialize(Schemas.DirectorSchema)
+        result = diretors_serialize.serialize_all(Director())
+        return jsonify(result)
+
     def post(self):
         req_json = request.json
         new_director = Director(**req_json)
@@ -126,8 +150,21 @@ class DirectorsDraw(Resource):
 
 @director_ns.route("/<int:pk>")
 class DirectorsDraw(Resource):
+    def get(self, pk):
+        try:
+            directors_serialize = Serialize(Schemas.DirectorSchema)
+            result = directors_serialize.serialize_get(Director, pk)
+            if result == {}:
+                return jsonify({"Error": "Такого актёра не существует"})
+        except:
+            return jsonify({"Error": "Индекс должен содержать только цифры"})
+        else:
+            return jsonify(result)
+
     def put(self, pk):
         director = Director.query.get(pk)
+        if director is None:
+            return '{"Answer": "Такого актёра не существует"}', 404
         req_json = request.json
         director.name = req_json["name"]
         db.session.add(director)
@@ -137,6 +174,8 @@ class DirectorsDraw(Resource):
 
     def delete(self, pk):
         director = Director.query.get(pk)
+        if director is None:
+            return '{"Answer": "Такого актёра не существует"}', 404
         db.session.delete(director)
         db.session.commit()
         db.session.close()
@@ -145,6 +184,11 @@ class DirectorsDraw(Resource):
 
 @genre_ns.route("/")
 class GenresDraw(Resource):
+    def get(self):
+        genres_serialize = Serialize(Schemas.GenreSchema)
+        result = genres_serialize.serialize_all(Genre())
+        return jsonify(result)
+
     def post(self):
         req_json = request.json
         new_genres = Genre(**req_json)
@@ -155,8 +199,21 @@ class GenresDraw(Resource):
 
 @genre_ns.route("/<int:pk>")
 class GenresDraw(Resource):
+    def get(self, pk):
+        try:
+            genres_serialize = Serialize(Schemas.GenreSchema)
+            result = genres_serialize.serialize_get(Genre, pk)
+            if result == {}:
+                return jsonify({"Error": "Такого жанра не существует"})
+        except:
+            return jsonify({"Error": "Индекс должен содержать только цифры"})
+        else:
+            return jsonify(result)
+
     def put(self, pk):
         genre = Genre.query.get(pk)
+        if genre is None:
+            return '{"Answer": "Такого жанра не существует"}', 404
         req_json = request.json
         genre.name = req_json["name"]
         db.session.add(genre)
@@ -166,6 +223,8 @@ class GenresDraw(Resource):
 
     def delete(self, pk):
         genre = Director.query.get(pk)
+        if genre is None:
+            return '{"Answer": "Такого жанра не существует"}', 404
         db.session.delete(genre)
         db.session.commit()
         db.session.close()
